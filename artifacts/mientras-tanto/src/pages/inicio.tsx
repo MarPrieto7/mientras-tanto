@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { PageTransition } from "@/components/PageTransition";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { emotionProfiles, startAmbient } from "@/lib/ambient";
 
 const phrases = [
   "No tienes que hacer nada rápido aquí.",
@@ -11,100 +12,94 @@ const phrases = [
   "Hoy no tienes que ser productivo.",
   "Mereces descansar sin culpa.",
   "Toma una respiración profunda.",
-  "Está bien no saber qué hacer."
+  "Está bien no saber qué hacer.",
+  "Hoy ya hiciste suficiente.",
+  "El silencio también es una forma de cuidarse."
 ];
 
 export default function Inicio() {
-  const [phrase, setPhrase] = useState(phrases[0]);
+  const [phraseIndex, setPhraseIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
-  
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const ambientHandleRef = useRef<{ stop: () => void } | null>(null);
   const { theme, setTheme } = useTheme();
 
+  // Rotate phrases slowly
   useEffect(() => {
     const interval = setInterval(() => {
-      setPhrase(prev => {
-        const currentIndex = phrases.indexOf(prev);
-        return phrases[(currentIndex + 1) % phrases.length];
-      });
-    }, 8000);
+      setPhraseIndex(prev => (prev + 1) % phrases.length);
+    }, 9000);
     return () => clearInterval(interval);
   }, []);
 
   const toggleAudio = () => {
     if (isPlaying) {
-      if (gainNodeRef.current) {
-        gainNodeRef.current.gain.setTargetAtTime(0, audioContextRef.current!.currentTime, 1);
-        setTimeout(() => {
-          oscillatorRef.current?.stop();
-          oscillatorRef.current?.disconnect();
-          audioContextRef.current?.close();
-        }, 1000);
-      }
+      ambientHandleRef.current?.stop();
+      ambientHandleRef.current = null;
+      audioCtxRef.current = null;
       setIsPlaying(false);
     } else {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioContextRef.current = ctx;
-      
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(130.81, ctx.currentTime); // C3
-      
-      // Soft modulation
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.value = 0.1;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 5;
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-      lfo.start();
-
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.setTargetAtTime(0.1, ctx.currentTime, 2); // Slow fade in
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.start();
-      oscillatorRef.current = osc;
-      gainNodeRef.current = gain;
+      audioCtxRef.current = ctx;
+      // Use the neutral/calm profile for the home screen
+      ambientHandleRef.current = startAmbient(ctx, emotionProfiles["neutral"]);
       setIsPlaying(true);
     }
   };
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      ambientHandleRef.current?.stop();
+    };
+  }, []);
+
   return (
     <PageTransition>
-      <div className="absolute top-4 right-0 flex gap-4">
-        <button 
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 text-foreground-soft hover:text-foreground transition-colors"
+      {/* Top controls */}
+      <div className="absolute top-5 right-5 flex gap-3 z-10">
+        <button
+          data-testid="button-toggle-theme"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
+          aria-label="Cambiar tema"
         >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {theme === "dark" ? <Sun className="w-4 h-4" strokeWidth={1.5} /> : <Moon className="w-4 h-4" strokeWidth={1.5} />}
         </button>
-        <button 
+        <button
+          data-testid="button-toggle-sound"
           onClick={toggleAudio}
-          className="p-2 text-foreground-soft hover:text-foreground transition-colors"
+          className="p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
+          aria-label={isPlaying ? "Silenciar" : "Activar sonido ambiente"}
         >
-          {isPlaying ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          {isPlaying ? <Volume2 className="w-4 h-4" strokeWidth={1.5} /> : <VolumeX className="w-4 h-4" strokeWidth={1.5} />}
         </button>
       </div>
 
+      {/* Centered phrase */}
       <div className="flex-1 flex flex-col items-center justify-center">
-        <motion.h1 
-          className="text-4xl md:text-5xl font-serif text-center leading-relaxed text-foreground tracking-wide px-4"
-          key={phrase}
-          initial={{ opacity: 0, filter: "blur(4px)" }}
-          animate={{ opacity: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, filter: "blur(4px)" }}
-          transition={{ duration: 2.5, ease: "easeInOut" }}
+        <AnimatePresence mode="wait">
+          <motion.h1
+            key={phraseIndex}
+            className="text-3xl md:text-4xl font-serif text-center leading-relaxed text-foreground tracking-wide px-4 max-w-xs"
+            initial={{ opacity: 0, filter: "blur(6px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(6px)" }}
+            transition={{ duration: 2.5, ease: "easeInOut" }}
+          >
+            {phrases[phraseIndex]}
+          </motion.h1>
+        </AnimatePresence>
+
+        {/* App name — subtle, below the phrase */}
+        <motion.p
+          className="mt-16 text-xs text-foreground-soft tracking-widest uppercase font-sans"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          transition={{ delay: 1.5, duration: 2 }}
         >
-          {phrase}
-        </motion.h1>
+          mientras tanto
+        </motion.p>
       </div>
     </PageTransition>
   );

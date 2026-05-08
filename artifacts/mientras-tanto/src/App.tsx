@@ -6,33 +6,42 @@ import { AnimatePresence } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-// Pages
 import Inicio from "@/pages/inicio";
 import ComoMeSiento from "@/pages/como-me-siento";
 import Diario from "@/pages/diario";
 import Pausa from "@/pages/pausa";
 import HoyBasta from "@/pages/hoy-basta";
+import ModoRespiracion from "@/pages/modo-respiracion";
 
 const queryClient = new QueryClient();
 
+// Pages that show the bottom nav
+const NAV_ROUTES = ["/", "/como-me-siento", "/diario", "/pausa", "/hoy-basta"];
+
 function Router() {
   const [location] = useLocation();
-  
+  const showNav = NAV_ROUTES.includes(location);
+
   return (
-    <AnimatePresence mode="wait">
-      <Switch location={location} key={location}>
-        <Route path="/" component={Inicio} />
-        <Route path="/como-me-siento" component={ComoMeSiento} />
-        <Route path="/diario" component={Diario} />
-        <Route path="/pausa" component={Pausa} />
-        <Route path="/hoy-basta" component={HoyBasta} />
-        <Route>
-          <div className="flex h-screen items-center justify-center text-foreground-soft font-serif text-xl">
-            No hay nada aqui. Regresa.
-          </div>
-        </Route>
-      </Switch>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait">
+        <Switch location={location} key={location}>
+          <Route path="/" component={Inicio} />
+          <Route path="/como-me-siento" component={ComoMeSiento} />
+          <Route path="/diario" component={Diario} />
+          <Route path="/pausa" component={Pausa} />
+          <Route path="/hoy-basta" component={HoyBasta} />
+          <Route path="/respiracion" component={ModoRespiracion} />
+          <Route>
+            <div className="flex h-screen items-center justify-center text-foreground-soft font-serif text-xl">
+              Nada aquí. Regresa.
+            </div>
+          </Route>
+        </Switch>
+      </AnimatePresence>
+
+      {showNav && <BottomNav />}
+    </>
   );
 }
 
@@ -42,11 +51,9 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <div className="min-h-[100dvh] w-full flex justify-center bg-background selection:bg-foreground selection:text-background transition-colors duration-1000">
-              <div className="w-full max-w-[430px] relative shadow-2xl shadow-black/5 dark:shadow-none bg-background border-x border-background-secondary/30">
-                <Router />
-                <BottomNav />
-              </div>
+            {/* Full-width layout — content width is managed per-page via PageTransition */}
+            <div className="min-h-[100dvh] w-full bg-background transition-colors duration-700">
+              <Router />
             </div>
           </WouterRouter>
           <Toaster />
