@@ -1,0 +1,272 @@
+Quiero que actúes como un diseñador UX/UI emocional, desarrollador frontend experto en React + Vite y especialista en experiencias digitales minimalistas, humanas y contemplativas.
+
+Necesito crear una web-app llamada “Mientras tanto”.
+
+La web-app NO debe sentirse como:
+- una startup
+- una red social
+- una app clínica
+- una app de productividad
+- una plataforma moderna agresiva
+
+La experiencia debe sentirse como:
+“un pequeño refugio emocional digital”.
+
+OBJETIVO:
+Crear un espacio íntimo, lento y seguro donde las personas puedan detenerse unos minutos, respirar, escribir y sentirse acompañadas emocionalmente sin presión.
+
+La sensación emocional de la web debe transmitir:
+- calma
+- suavidad
+- silencio
+- lentitud
+- humanidad
+- descanso mental
+- compañía emocional
+- intimidad
+- ligereza visual
+
+────────────────────
+REQUISITOS TÉCNICOS
+────────────────────
+
+- Usar React + Vite
+- Mobile First
+- Todo debe funcionar completamente en local
+- NO backend
+- NO autenticación
+- NO servidores
+- NO bases de datos externas
+- NO almacenamiento en la nube
+- NO APIs obligatorias
+- Todo debe guardarse solo en localStorage
+- Optimizada para desplegar gratis en Vercel
+
+El código debe ser:
+- limpio
+- organizado
+- comentado
+- fácil de entender
+- fácil de mantener
+- sencillo para principiantes
+
+────────────────────
+IDENTIDAD VISUAL
+────────────────────
+
+La estética debe inspirarse en:
+- acuarela suave
+- papel texturizado
+- luz de tarde
+- cuadernos íntimos
+- minimalismo emocional
+- espacios vacíos
+- silencio visual
+- diseño editorial cálido
+
+NO usar:
+- neones
+- colores saturados
+- interfaces corporativas
+- elementos agresivos
+- demasiadas notificaciones
+- exceso de botones
+- diseño futurista tech
+
+────────────────────
+PALETA DE COLOR
+────────────────────
+
+Usar esta paleta principal:
+
+Fondo principal:
+#F6F1EA
+
+Fondo secundario:
+#EAE2D6
+
+Texto principal:
+#4E4A46
+
+Texto suave:
+#7A746E
+
+Lavanda humo:
+#C8C1D9
+
+Azul niebla:
+#BFD1D9
+
+Verde salvia suave:
+#C7D0C0
+
+La interfaz debe sentirse:
+- cálida
+- respirable
+- orgánica
+- suave
+- emocionalmente reguladora
+
+────────────────────
+TIPOGRAFÍAS
+────────────────────
+
+Títulos:
+Cormorant Garamond
+
+Texto:
+Inter
+
+Usar mucho espacio entre elementos y respiración visual.
+
+────────────────────
+FUNCIONALIDADES
+────────────────────
+
+1. Pantalla inicial emocional
+
+Mostrar un mensaje tipo:
+
+“No tienes que hacer nada rápido aquí.”
+
+Con transición suave y animaciones lentas.
+
+────────────────────
+
+2. Selector emocional
+
+Pregunta:
+“¿Cómo estás hoy?”
+
+Opciones:
+- saturado
+- triste
+- vacío
+- cansado
+- sensible
+- confundido
+- en calma
+
+Cada opción debe mostrar:
+- una frase humana y suave
+- una pequeña práctica
+- una respiración guiada
+- una ilustración ligera
+- una acción mínima
+
+Evitar frases vacías motivacionales.
+
+Las frases deben sentirse:
+- reales
+- íntimas
+- humanas
+- poéticas
+- cálidas
+
+Ejemplo:
+“A veces sobrevivir al día ya es suficiente.”
+
+────────────────────
+
+3. Diario emocional privado
+
+Espacio de escritura libre.
+
+IMPORTANTE:
+- Todo debe guardarse solo en localStorage
+- El usuario debe sentir privacidad y seguridad emocional
+- Diseño minimalista tipo cuaderno íntimo
+
+────────────────────
+
+4. Ritual de pausa
+
+Pequeños ejercicios de 1–3 minutos:
+- respirar
+- escribir
+- observar
+- escuchar
+- dibujar
+- parar
+
+Las transiciones deben ser lentas y suaves.
+
+────────────────────
+
+5. “Hoy basta con esto”
+
+Mostrar una sola acción sencilla diaria.
+
+Ejemplos:
+- beber agua
+- abrir la ventana
+- descansar sin culpa
+- caminar cinco minutos
+- respirar profundamente
+
+────────────────────
+
+6. Sonidos ambientales opcionales
+
+Añadir un botón para activar:
+- lluvia suave
+- viento
+- piano ambiental
+- sonidos cálidos
+
+Todo opcional y discreto.
+
+────────────────────
+
+7. UX emocional
+
+La navegación debe sentirse:
+- lenta
+- clara
+- ligera
+- silenciosa
+- sin estrés
+
+NO usar:
+- gamificación
+- rankings
+- estadísticas
+- logros
+- presión de productividad
+
+────────────────────
+
+8. Arquitectura de páginas
+
+- Inicio
+- Cómo me siento
+- Diario
+- Pausa
+- Hoy basta con esto
+
+────────────────────
+
+9. Extras opcionales
+
+- modo oscuro cálido
+- textura papel ligera
+- fondos orgánicos
+- frases aleatorias
+- animaciones suaves
+- degradados sutiles
+- ilustraciones acuarela minimalistas
+
+────────────────────
+
+SENSACIÓN FINAL
+────────────────────
+
+La experiencia debe sentirse como:
+- una habitación tranquila
+- una libreta íntima
+- una respiración profunda
+- una pausa segura
+- un espacio donde bajar la guardia
+
+El usuario debe sentir:
+“Aquí puedo descansar un momento.”

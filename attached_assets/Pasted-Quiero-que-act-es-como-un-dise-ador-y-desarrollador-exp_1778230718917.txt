@@ -1,0 +1,170 @@
+Quiero que actúes como un diseñador y desarrollador experto en experiencias digitales emocionales, minimalistas y humanas.
+
+Necesito crear una web-app llamada “Mientras tanto”.
+
+La idea NO es una red social, ni una app de productividad, ni una app clínica de salud mental.
+
+“Mientras tanto” debe sentirse como un pequeño refugio emocional digital:
+un espacio lento, íntimo y seguro para personas que se sienten agotadas, saturadas emocionalmente, solas o mentalmente cansadas.
+
+La experiencia debe transmitir:
+- calma
+- silencio
+- suavidad
+- compañía emocional
+- lentitud
+- descanso mental
+- humanidad
+
+OBJETIVO:
+Crear una web-app extremadamente sencilla, visualmente delicada y emocionalmente acogedora.
+
+REQUISITOS TÉCNICOS:
+- Usar React + Vite
+- Todo debe funcionar en local
+- NO backend
+- NO autenticación
+- NO servidores
+- NO APIs externas obligatorias
+- NO base de datos externa
+- Guardar todo únicamente en localStorage
+- Optimizada para móvil primero
+- Fácil de desplegar en Vercel
+
+ESTÉTICA:
+Inspiración visual:
+- tonos pastel suaves
+- beige
+- crema
+- gris cálido
+- lavanda suave
+- azul humo
+- acuarela ligera
+- textura papel
+- minimalismo emocional
+- espacios vacíos
+- tipografía elegante y muy legible
+
+NO usar:
+- diseño corporativo
+- colores saturados
+- notificaciones agresivas
+- gamificación intensa
+- rankings
+- estadísticas frías
+
+LA WEB-APP DEBE TENER:
+
+1. Pantalla de bienvenida emocional
+Texto tipo:
+“No tienes que hacer nada rápido aquí.”
+
+Con transición suave y música opcional relajante.
+
+2. Selector emocional
+Pregunta:
+“¿Cómo estás hoy?”
+
+Opciones:
+- saturado
+- triste
+- vacío
+- cansado
+- sensible
+- confundido
+- en calma
+
+Cada opción muestra:
+- una frase breve reconfortante
+- una pequeña práctica
+- una respiración guiada
+- una ilustración suave
+- o una acción mínima
+
+3. Espacio privado de escritura
+Un diario emocional privado.
+
+Todo se guarda SOLO en localStorage.
+
+Debe sentirse íntimo y seguro.
+
+4. Ritual de pausa
+Micro ejercicios de 1 a 3 minutos:
+- respirar
+- observar
+- escribir
+- escuchar
+- dibujar
+- parar
+
+5. Sección “Hoy basta con esto”
+Mostrar una sola acción pequeña diaria.
+
+Ejemplos:
+- beber agua
+- abrir la ventana
+- descansar sin culpa
+- caminar 5 minutos
+
+6. Diseño sonoro opcional
+Botón para activar:
+- lluvia suave
+- piano ambiental
+- viento
+- sonidos cálidos
+
+Todo opcional.
+
+7. Frases humanas
+Evitar frases motivacionales vacías.
+
+Las frases deben sentirse:
+- reales
+- suaves
+- humanas
+- poéticas
+- íntimas
+
+Ejemplo:
+“A veces sobrevivir al día ya es suficiente.”
+
+8. UX emocional
+La navegación debe ser:
+- lenta
+- clara
+- sin estrés
+- sin demasiados botones
+
+9. Arquitectura
+Estructura simple:
+- Home
+- Cómo me siento
+- Diario
+- Pausa
+- Hoy basta con esto
+
+10. Código
+- limpio
+- comentado
+- organizado
+- fácil de entender
+- accesible para principiantes
+
+11. Extras opcionales
+- modo oscuro cálido
+- ilustraciones suaves animadas
+- transiciones lentas
+- fondos orgánicos
+- frases aleatorias
+
+IMPORTANTE:
+La sensación final debe parecer:
+“un lugar donde descansar emocionalmente unos minutos.”
+
+No debe parecer:
+- una startup
+- una app médica
+- una red social
+- una app de productividad
+
+Debe sentirse humana.

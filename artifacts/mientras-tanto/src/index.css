@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-background-secondary: hsl(var(--background-secondary));
+  --color-foreground: hsl(var(--foreground));
+  --color-foreground-soft: hsl(var(--foreground-soft));
+  
+  --color-lavender: hsl(var(--lavender));
+  --color-fog: hsl(var(--fog));
+  --color-sage: hsl(var(--sage));
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+:root {
+  --background: 35 32% 94%;
+  --background-secondary: 36 29% 88%;
+  --foreground: 30 5% 29%;
+  --foreground-soft: 30 5% 45%;
+  
+  --lavender: 258 19% 80%;
+  --fog: 198 21% 80%;
+  --sage: 94 14% 78%;
+}
+
+.dark {
+  --background: 30 15% 10%;
+  --background-secondary: 24 14% 15%;
+  --foreground: 35 27% 87%;
+  --foreground-soft: 27 7% 57%;
+  
+  --lavender: 258 19% 40%;
+  --fog: 198 21% 40%;
+  --sage: 94 14% 40%;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-background text-foreground tracking-wide;
+    position: relative;
+  }
+  
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-normal;
+  }
+}
