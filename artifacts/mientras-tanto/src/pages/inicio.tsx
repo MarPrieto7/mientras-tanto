@@ -3,7 +3,8 @@ import { PageTransition } from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
-import { emotionProfiles, startAmbient } from "@/lib/ambient";
+import { emotionProfiles, startAmbient, AmbientHandle } from "@/lib/ambient";
+import logoUrl from "@/assets/logo.svg";
 
 const phrases = [
   "No tienes que hacer nada rápido aquí.",
@@ -21,7 +22,7 @@ export default function Inicio() {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const ambientHandleRef = useRef<{ stop: () => void } | null>(null);
+  const handleRef = useRef<AmbientHandle | null>(null);
   const { theme, setTheme } = useTheme();
 
   // Rotate phrases slowly
@@ -32,25 +33,34 @@ export default function Inicio() {
     return () => clearInterval(interval);
   }, []);
 
+  const stopAudio = () => {
+    handleRef.current?.stop();
+    handleRef.current = null;
+    // Close and discard the context immediately so browser releases audio
+    audioCtxRef.current = null;
+    setIsPlaying(false);
+  };
+
+  const startAudio = () => {
+    // Always create a fresh AudioContext
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioCtxRef.current = ctx;
+    handleRef.current = startAmbient(ctx, emotionProfiles["neutral"]);
+    setIsPlaying(true);
+  };
+
   const toggleAudio = () => {
     if (isPlaying) {
-      ambientHandleRef.current?.stop();
-      ambientHandleRef.current = null;
-      audioCtxRef.current = null;
-      setIsPlaying(false);
+      stopAudio();
     } else {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioCtxRef.current = ctx;
-      // Use the neutral/calm profile for the home screen
-      ambientHandleRef.current = startAmbient(ctx, emotionProfiles["neutral"]);
-      setIsPlaying(true);
+      startAudio();
     }
   };
 
-  // Cleanup on unmount
+  // Stop audio when page is unmounted (e.g., navigating away)
   useEffect(() => {
     return () => {
-      ambientHandleRef.current?.stop();
+      handleRef.current?.stop();
     };
   }, []);
 
@@ -64,7 +74,9 @@ export default function Inicio() {
           className="p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
           aria-label="Cambiar tema"
         >
-          {theme === "dark" ? <Sun className="w-4 h-4" strokeWidth={1.5} /> : <Moon className="w-4 h-4" strokeWidth={1.5} />}
+          {theme === "dark"
+            ? <Sun className="w-4 h-4" strokeWidth={1.5} />
+            : <Moon className="w-4 h-4" strokeWidth={1.5} />}
         </button>
         <button
           data-testid="button-toggle-sound"
@@ -72,12 +84,25 @@ export default function Inicio() {
           className="p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
           aria-label={isPlaying ? "Silenciar" : "Activar sonido ambiente"}
         >
-          {isPlaying ? <Volume2 className="w-4 h-4" strokeWidth={1.5} /> : <VolumeX className="w-4 h-4" strokeWidth={1.5} />}
+          {isPlaying
+            ? <Volume2 className="w-4 h-4" strokeWidth={1.5} />
+            : <VolumeX className="w-4 h-4" strokeWidth={1.5} />}
         </button>
       </div>
 
-      {/* Centered phrase */}
-      <div className="flex-1 flex flex-col items-center justify-center">
+      {/* Centered content */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-10">
+        {/* Logo */}
+        <motion.img
+          src={logoUrl}
+          alt="Mientras tanto"
+          className="w-16 h-16 opacity-80"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 0.8, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+        />
+
+        {/* Rotating phrase */}
         <AnimatePresence mode="wait">
           <motion.h1
             key={phraseIndex}
@@ -91,9 +116,9 @@ export default function Inicio() {
           </motion.h1>
         </AnimatePresence>
 
-        {/* App name — subtle, below the phrase */}
+        {/* App name — very subtle, below phrase */}
         <motion.p
-          className="mt-16 text-xs text-foreground-soft tracking-widest uppercase font-sans"
+          className="text-xs text-foreground-soft tracking-widest uppercase font-sans"
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
           transition={{ delay: 1.5, duration: 2 }}

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useLocation } from "wouter";
-import { emotionProfiles, startAmbient, EmotionId } from "@/lib/ambient";
+import { emotionProfiles, startAmbient, AmbientHandle, EmotionId } from "@/lib/ambient";
 
 type BreathPhase = "inhala" | "sostén" | "exhala";
 
@@ -22,37 +22,38 @@ export default function ModoRespiracion() {
   const [, setLocation] = useLocation();
   const [phase, setPhase] = useState<BreathPhase>("inhala");
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [isActive, setIsActive] = useState(false);
   const [started, setStarted] = useState(false);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const ambientHandleRef = useRef<{ stop: () => void } | null>(null);
+  const handleRef = useRef<AmbientHandle | null>(null);
+  const phaseIndexRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Determine which emotional profile to use
+  // Determine emotional profile from localStorage
   const savedEmotion = localStorage.getItem("mientras_tanto_emotion") as EmotionId | null;
-  const emotionId: EmotionId = (savedEmotion && emotionProfiles[savedEmotion]) ? savedEmotion : "neutral";
+  const emotionId: EmotionId = savedEmotion && emotionProfiles[savedEmotion] ? savedEmotion : "neutral";
   const profile = emotionProfiles[emotionId];
   const { inhale, hold, exhale } = profile.breathCycle;
 
-  // Sequence: inhala → sostén → exhala → inhala...
   const phaseSequence: { phase: BreathPhase; duration: number }[] = [
     { phase: "inhala", duration: inhale },
     { phase: "sostén", duration: hold },
     { phase: "exhala", duration: exhale }
   ];
 
-  const phaseIndexRef = useRef(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const runPhase = useCallback((index: number) => {
     const { phase: p, duration } = phaseSequence[index % phaseSequence.length];
     setPhase(p);
     setSecondsLeft(duration);
 
-    const countdown = setInterval(() => {
+    // Clear any previous countdown
+    if (countdownRef.current) clearInterval(countdownRef.current);
+
+    countdownRef.current = setInterval(() => {
       setSecondsLeft(prev => {
         if (prev <= 1) {
-          clearInterval(countdown);
+          clearInterval(countdownRef.current!);
           return 0;
         }
         return prev - 1;
@@ -60,40 +61,49 @@ export default function ModoRespiracion() {
     }, 1000);
 
     timerRef.current = setTimeout(() => {
-      clearInterval(countdown);
-      phaseIndexRef.current = index + 1;
-      runPhase(index + 1);
+      clearInterval(countdownRef.current!);
+      const next = index + 1;
+      phaseIndexRef.current = next;
+      runPhase(next);
     }, duration * 1000);
   }, [inhale, hold, exhale]);
 
+  const stopAudio = () => {
+    handleRef.current?.stop();
+    handleRef.current = null;
+    audioCtxRef.current = null;
+  };
+
   const startSession = () => {
     setStarted(true);
-    setIsActive(true);
 
-    // Start ambient sound
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     audioCtxRef.current = ctx;
-    ambientHandleRef.current = startAmbient(ctx, profile);
+    handleRef.current = startAmbient(ctx, profile);
 
     phaseIndexRef.current = 0;
     runPhase(0);
   };
 
   const handleClose = () => {
+    // Stop all timers
     if (timerRef.current) clearTimeout(timerRef.current);
-    ambientHandleRef.current?.stop();
-    audioCtxRef.current?.close();
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    // Stop audio (fades out then closes AudioContext)
+    stopAudio();
     setLocation("/como-me-siento");
   };
 
+  // Cleanup if component unmounts for any reason
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      ambientHandleRef.current?.stop();
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      handleRef.current?.stop();
     };
   }, []);
 
-  // Scale values for breathing circle
+  const phaseDuration = phase === "inhala" ? inhale : phase === "sostén" ? hold : exhale;
   const circleScale = phase === "inhala" ? 1.6 : phase === "sostén" ? 1.6 : 1.0;
   const circleOpacity = phase === "sostén" ? 0.75 : phase === "inhala" ? 0.6 : 0.35;
 
@@ -105,27 +115,27 @@ export default function ModoRespiracion() {
       exit={{ opacity: 0 }}
       transition={{ duration: 1.2 }}
     >
-      {/* Close button */}
+      {/* Close */}
       <button
         onClick={handleClose}
         data-testid="button-close-respiration"
         className="absolute top-6 right-6 p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
+        aria-label="Cerrar"
       >
         <X className="w-5 h-5" strokeWidth={1.5} />
       </button>
 
-      {/* Emotion label */}
+      {/* Sound label — very subtle */}
       <motion.p
-        className="absolute top-6 left-1/2 -translate-x-1/2 text-xs text-foreground-soft tracking-widest uppercase font-sans"
+        className="absolute top-6 left-1/2 -translate-x-1/2 text-xs text-foreground-soft tracking-widest uppercase font-sans whitespace-nowrap"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ delay: 0.5, duration: 1.5 }}
+        animate={{ opacity: 0.5 }}
+        transition={{ delay: 0.8, duration: 1.5 }}
       >
         {profile.label}
       </motion.p>
 
       {!started ? (
-        // Pre-start screen
         <motion.div
           className="flex flex-col items-center gap-12 px-8 text-center"
           initial={{ opacity: 0, y: 10 }}
@@ -136,16 +146,18 @@ export default function ModoRespiracion() {
             <h1 className="text-3xl font-serif text-foreground leading-relaxed">
               Modo Respiración
             </h1>
-            <p className="text-foreground-soft text-sm leading-loose max-w-xs">
-              Deja que la música y el movimiento guíen tu respiración.
+            <p className="text-foreground-soft text-sm leading-loose max-w-xs font-sans">
+              El sonido y el movimiento guiarán tu respiración.
               <br />
-              Cierra los ojos cuando sientas que puedes.
+              Cierra los ojos cuando puedas.
             </p>
           </div>
 
-          <div className="text-xs text-foreground-soft space-y-1 font-sans tracking-wide">
-            <div>Inhala {inhale}s · {hold > 0 ? `Sostén ${hold}s · ` : ""}Exhala {exhale}s</div>
-          </div>
+          <p className="text-xs text-foreground-soft font-sans tracking-wide">
+            Inhala {inhale}s
+            {hold > 0 ? ` · Sostén ${hold}s` : ""}
+            {` · Exhala ${exhale}s`}
+          </p>
 
           <button
             data-testid="button-start-respiration"
@@ -156,34 +168,33 @@ export default function ModoRespiracion() {
           </button>
         </motion.div>
       ) : (
-        // Active breathing session
         <div className="flex flex-col items-center gap-8 w-full px-8">
           {/* Breathing circle */}
           <div className="relative flex items-center justify-center w-72 h-72">
-            {/* Outer glow ring */}
+            {/* Outer glow */}
             <motion.div
-              className="absolute rounded-full bg-lavender/20"
-              animate={{ scale: circleScale * 1.15, opacity: circleOpacity * 0.5 }}
-              transition={{ duration: phase === "inhala" ? inhale : phase === "sostén" ? hold : exhale, ease: "easeInOut" }}
-              style={{ width: 192, height: 192 }}
+              className="absolute rounded-full bg-lavender/15"
+              animate={{ scale: circleScale * 1.18, opacity: circleOpacity * 0.45 }}
+              transition={{ duration: phaseDuration, ease: "easeInOut" }}
+              style={{ width: 200, height: 200 }}
             />
             {/* Main circle */}
             <motion.div
-              className={`absolute rounded-full ${phaseColors[phase]} backdrop-blur-sm`}
+              className={`absolute rounded-full ${phaseColors[phase]}`}
               animate={{ scale: circleScale, opacity: circleOpacity }}
-              transition={{ duration: phase === "inhala" ? inhale : phase === "sostén" ? hold : exhale, ease: "easeInOut" }}
-              style={{ width: 192, height: 192 }}
+              transition={{ duration: phaseDuration, ease: "easeInOut" }}
+              style={{ width: 200, height: 200 }}
             />
-            {/* Inner text */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
+            {/* Phase text */}
+            <div className="relative z-10 flex flex-col items-center gap-2">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={phase}
                   className="font-serif text-2xl text-foreground"
-                  initial={{ opacity: 0, y: 4 }}
+                  initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.6 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.7 }}
                 >
                   {phaseLabels[phase]}
                 </motion.span>
@@ -194,12 +205,12 @@ export default function ModoRespiracion() {
             </div>
           </div>
 
-          {/* Quiet reminder */}
+          {/* Quiet reminder — appears after a few seconds */}
           <motion.p
             className="text-xs text-foreground-soft text-center leading-loose max-w-xs font-sans"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ delay: 3, duration: 2 }}
+            animate={{ opacity: 0.45 }}
+            transition={{ delay: 4, duration: 2.5 }}
           >
             No hay nada que hacer excepto respirar.
           </motion.p>

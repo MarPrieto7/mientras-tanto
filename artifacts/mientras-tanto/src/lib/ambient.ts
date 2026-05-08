@@ -1,180 +1,237 @@
-// Generative ambient sound engine using Web Audio API
-// Creates layered, emotional soundscapes with synthetic reverb
+// Nature-based ambient sound engine using Web Audio API
+// Uses pink/brown noise buffers instead of oscillators — sounds like rain, wind, or soft nature
+// No external audio files or APIs required
 
-export type EmotionId = "saturado" | "triste" | "vacio" | "cansado" | "sensible" | "confundido" | "en calma" | "neutral";
+export type EmotionId =
+  | "saturado"
+  | "triste"
+  | "vacio"
+  | "cansado"
+  | "sensible"
+  | "confundido"
+  | "en calma"
+  | "neutral";
 
 export interface EmotionAmbientProfile {
-  notes: number[];       // Base frequencies in Hz
-  filterFreq: number;    // Low-pass filter cutoff
-  lfoRate: number;       // Amplitude modulation rate (very slow)
-  reverbSeconds: number; // Reverb tail length
-  reverbDecay: number;   // Reverb decay steepness
-  breathCycle: { inhale: number; hold: number; exhale: number }; // seconds
+  noiseType: "pink" | "brown";
+  filterType: BiquadFilterType;
+  filterFreq: number;   // Hz — shapes the nature texture
+  filterQ: number;      // resonance
+  gain: number;         // master volume
+  lfoRate: number;      // very slow wave modulation (breath-like)
+  lfoDepth: number;     // depth of the wave
+  fadeIn: number;       // seconds to fade in
+  breathCycle: { inhale: number; hold: number; exhale: number };
   label: string;
 }
 
 export const emotionProfiles: Record<EmotionId, EmotionAmbientProfile> = {
+  // Home screen — soft rain texture (pink noise, bandpass around 2.5kHz)
   neutral: {
-    notes: [174.61, 261.63, 349.23, 523.25], // F3, C4, F4, C5 — open & calm
-    filterFreq: 900,
-    lfoRate: 0.04,
-    reverbSeconds: 4,
-    reverbDecay: 3,
+    noiseType: "pink",
+    filterType: "bandpass",
+    filterFreq: 2400,
+    filterQ: 0.6,
+    gain: 0.28,
+    lfoRate: 0.06,
+    lfoDepth: 0.06,
+    fadeIn: 3,
     breathCycle: { inhale: 4, hold: 2, exhale: 6 },
-    label: "Calma"
+    label: "Lluvia suave"
   },
+  // Calm — bright open rain, airy
   "en calma": {
-    notes: [261.63, 329.63, 392.00, 523.25], // C4, E4, G4, C5 — C major, bright
-    filterFreq: 1200,
+    noiseType: "pink",
+    filterType: "bandpass",
+    filterFreq: 3200,
+    filterQ: 0.5,
+    gain: 0.22,
     lfoRate: 0.05,
-    reverbSeconds: 3,
-    reverbDecay: 2.5,
+    lfoDepth: 0.05,
+    fadeIn: 3,
     breathCycle: { inhale: 4, hold: 2, exhale: 6 },
-    label: "Calma"
+    label: "Brisa suave"
   },
+  // Tired — deep brown noise, low wind, very grounding
   cansado: {
-    notes: [130.81, 196.00, 261.63, 392.00], // C3, G3, C4, G4 — low, open, restful
-    filterFreq: 450,
-    lfoRate: 0.025,
-    reverbSeconds: 6,
-    reverbDecay: 3.5,
-    breathCycle: { inhale: 4, hold: 1, exhale: 8 },
-    label: "Descanso"
-  },
-  triste: {
-    notes: [146.83, 220.00, 293.66, 440.00], // D3, A3, D4, A4 — open D, soft
-    filterFreq: 600,
-    lfoRate: 0.035,
-    reverbSeconds: 5,
-    reverbDecay: 3,
-    breathCycle: { inhale: 4, hold: 2, exhale: 7 },
-    label: "Suavidad"
-  },
-  vacio: {
-    notes: [220.00, 329.63, 440.00, 659.25], // A3, E4, A4, E5 — open 5ths, ethereal
-    filterFreq: 750,
-    lfoRate: 0.02,
-    reverbSeconds: 8,
-    reverbDecay: 4,
-    breathCycle: { inhale: 4, hold: 7, exhale: 8 },
-    label: "Espacio"
-  },
-  saturado: {
-    notes: [174.61, 261.63, 349.23, 392.00], // F3, C4, F4, G4 — grounded, stable
-    filterFreq: 700,
+    noiseType: "brown",
+    filterType: "lowpass",
+    filterFreq: 220,
+    filterQ: 0.5,
+    gain: 0.55,
     lfoRate: 0.03,
-    reverbSeconds: 4,
-    reverbDecay: 2.5,
-    breathCycle: { inhale: 4, hold: 4, exhale: 4 },
-    label: "Anclaje"
+    lfoDepth: 0.08,
+    fadeIn: 4,
+    breathCycle: { inhale: 4, hold: 1, exhale: 8 },
+    label: "Viento profundo"
   },
-  sensible: {
-    notes: [164.81, 246.94, 329.63, 493.88], // E3, B3, E4, B4 — E open, warm
+  // Sad — soft rain, medium low-pass, gentle
+  triste: {
+    noiseType: "pink",
+    filterType: "lowpass",
     filterFreq: 900,
+    filterQ: 0.5,
+    gain: 0.32,
     lfoRate: 0.04,
-    reverbSeconds: 4,
-    reverbDecay: 2.8,
-    breathCycle: { inhale: 4, hold: 2, exhale: 6 },
-    label: "Ternura"
+    lfoDepth: 0.06,
+    fadeIn: 3.5,
+    breathCycle: { inhale: 4, hold: 2, exhale: 7 },
+    label: "Lluvia tranquila"
   },
-  confundido: {
-    notes: [196.00, 293.66, 392.00, 523.25], // G3, D4, G4, C5 — open 5ths+4th
-    filterFreq: 800,
-    lfoRate: 0.04,
-    reverbSeconds: 5,
-    reverbDecay: 3,
+  // Empty — wide open airy noise, light high-pass texture
+  vacio: {
+    noiseType: "pink",
+    filterType: "highpass",
+    filterFreq: 1800,
+    filterQ: 0.4,
+    gain: 0.18,
+    lfoRate: 0.025,
+    lfoDepth: 0.07,
+    fadeIn: 5,
+    breathCycle: { inhale: 4, hold: 7, exhale: 8 },
+    label: "Aire abierto"
+  },
+  // Saturated — very deep brown, grounding rumble (like distant ocean)
+  saturado: {
+    noiseType: "brown",
+    filterType: "lowpass",
+    filterFreq: 300,
+    filterQ: 0.6,
+    gain: 0.5,
+    lfoRate: 0.035,
+    lfoDepth: 0.07,
+    fadeIn: 3,
+    breathCycle: { inhale: 4, hold: 4, exhale: 4 },
+    label: "Océano lejano"
+  },
+  // Sensitive — soft mid-range rain, present and warm
+  sensible: {
+    noiseType: "pink",
+    filterType: "bandpass",
+    filterFreq: 1600,
+    filterQ: 0.7,
+    gain: 0.26,
+    lfoRate: 0.045,
+    lfoDepth: 0.05,
+    fadeIn: 3,
     breathCycle: { inhale: 4, hold: 2, exhale: 6 },
-    label: "Claridad"
+    label: "Lluvia cálida"
+  },
+  // Confused — gentle lowpass pink, soft and centering
+  confundido: {
+    noiseType: "pink",
+    filterType: "lowpass",
+    filterFreq: 700,
+    filterQ: 0.5,
+    gain: 0.3,
+    lfoRate: 0.04,
+    lfoDepth: 0.06,
+    fadeIn: 3,
+    breathCycle: { inhale: 4, hold: 2, exhale: 6 },
+    label: "Bosque quieto"
   }
 };
 
-// Creates a synthetic reverb impulse response (no external files needed)
-function createReverb(ctx: AudioContext, seconds: number, decay: number): ConvolverNode {
-  const convolver = ctx.createConvolver();
-  const rate = ctx.sampleRate;
-  const length = Math.floor(rate * seconds);
-  const impulse = ctx.createBuffer(2, length, rate);
+// Paul Kellet's pink noise algorithm — sounds like rain/nature
+function createPinkNoiseBuffer(ctx: AudioContext): AudioBuffer {
+  const bufferSize = ctx.sampleRate * 3; // 3-second loop
+  const buffer = ctx.createBuffer(2, bufferSize, ctx.sampleRate);
 
-  for (let channel = 0; channel < 2; channel++) {
-    const data = impulse.getChannelData(channel);
-    for (let i = 0; i < length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + w * 0.0555179;
+      b1 = 0.99332 * b1 + w * 0.0750759;
+      b2 = 0.96900 * b2 + w * 0.1538520;
+      b3 = 0.86650 * b3 + w * 0.3104856;
+      b4 = 0.55000 * b4 + w * 0.5329522;
+      b5 = -0.7616 * b5 - w * 0.0168980;
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+      b6 = w * 0.115926;
     }
   }
+  return buffer;
+}
 
-  convolver.buffer = impulse;
-  return convolver;
+// Brown noise — deeper rumble, like distant wind or ocean waves
+function createBrownNoiseBuffer(ctx: AudioContext): AudioBuffer {
+  const bufferSize = ctx.sampleRate * 3;
+  const buffer = ctx.createBuffer(2, bufferSize, ctx.sampleRate);
+
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let lastOut = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const w = Math.random() * 2 - 1;
+      data[i] = (lastOut + 0.02 * w) / 1.02;
+      lastOut = data[i];
+      data[i] *= 3.2;
+    }
+  }
+  return buffer;
 }
 
 export interface AmbientHandle {
   stop: () => void;
 }
 
-// Builds and starts the full ambient soundscape for a given profile
 export function startAmbient(ctx: AudioContext, profile: EmotionAmbientProfile): AmbientHandle {
+  // Build the noise buffer source
+  const noiseBuffer = profile.noiseType === "pink"
+    ? createPinkNoiseBuffer(ctx)
+    : createBrownNoiseBuffer(ctx);
+
+  const source = ctx.createBufferSource();
+  source.buffer = noiseBuffer;
+  source.loop = true;
+
+  // Shaping filter (determines the nature texture — rain vs wind vs ocean)
+  const filter = ctx.createBiquadFilter();
+  filter.type = profile.filterType;
+  filter.frequency.value = profile.filterFreq;
+  filter.Q.value = profile.filterQ;
+
+  // Master gain with slow fade-in
   const masterGain = ctx.createGain();
   masterGain.gain.setValueAtTime(0, ctx.currentTime);
-  masterGain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 4);
+  masterGain.gain.linearRampToValueAtTime(profile.gain, ctx.currentTime + profile.fadeIn);
 
-  const reverb = createReverb(ctx, profile.reverbSeconds, profile.reverbDecay);
-  const dryGain = ctx.createGain();
-  const wetGain = ctx.createGain();
-  dryGain.gain.value = 0.35;
-  wetGain.gain.value = 0.65;
-
-  // Low-pass filter for warmth
-  const filter = ctx.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.value = profile.filterFreq;
-  filter.Q.value = 0.7;
-
-  // Very slow amplitude LFO for breathing feel
+  // Very slow LFO for wave-like breathing modulation (like wind gusts or rain variation)
   const lfo = ctx.createOscillator();
   const lfoGain = ctx.createGain();
   lfo.type = "sine";
   lfo.frequency.value = profile.lfoRate;
-  lfoGain.gain.value = profile.lfoRate * 0.8;
+  lfoGain.gain.value = profile.gain * profile.lfoDepth;
   lfo.connect(lfoGain);
+  lfoGain.connect(masterGain.gain);
   lfo.start();
 
-  // Chain: oscillators → filter → [dryGain + reverb→wetGain] → masterGain → destination
-  filter.connect(dryGain);
-  filter.connect(reverb);
-  reverb.connect(wetGain);
-  dryGain.connect(masterGain);
-  wetGain.connect(masterGain);
+  // Chain: source → filter → masterGain → destination
+  source.connect(filter);
+  filter.connect(masterGain);
   masterGain.connect(ctx.destination);
-  lfoGain.connect(masterGain.gain);
+  source.start();
 
-  // Create one oscillator per note, slightly detuned for natural chorus effect
-  const oscillators: OscillatorNode[] = profile.notes.map((freq, i) => {
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    // Slight detuning on each oscillator for richness (±5 cents)
-    const detune = (i % 2 === 0 ? 1 : -1) * (i + 1) * 2.5;
-    osc.frequency.value = freq;
-    osc.detune.value = detune;
-
-    const oscGain = ctx.createGain();
-    // Higher notes are quieter
-    oscGain.gain.value = 0.25 - i * 0.04;
-
-    osc.connect(oscGain);
-    oscGain.connect(filter);
-    osc.start();
-    return osc;
-  });
+  let stopped = false;
 
   return {
     stop: () => {
-      masterGain.gain.setTargetAtTime(0, ctx.currentTime, 1.5);
+      if (stopped) return;
+      stopped = true;
+
+      // Fade out quickly then close context — this guarantees silence
+      const now = ctx.currentTime;
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+      masterGain.gain.linearRampToValueAtTime(0, now + 1.2);
+
       setTimeout(() => {
-        oscillators.forEach(osc => { try { osc.stop(); osc.disconnect(); } catch {} });
-        lfo.stop();
-        masterGain.disconnect();
-        reverb.disconnect();
-        filter.disconnect();
-      }, 6000);
+        try { source.stop(); } catch {}
+        try { lfo.stop(); } catch {}
+        try { ctx.close(); } catch {}
+      }, 1300);
     }
   };
 }
