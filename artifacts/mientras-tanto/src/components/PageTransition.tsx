@@ -1,52 +1,74 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-// Watercolor accent blobs — logo palette (sage, lavender, fog)
-// More visible now: opacity 0.08–0.14
-function WatercolorAccents() {
+/**
+ * WatercolorStrokes — authentic SVG brush-stroke shapes (NOT circles/blobs).
+ * Each path models a real watercolor brush mark:
+ *   - Tapered tips on both ends (like a brush lifting off the paper)
+ *   - Wider middle section
+ *   - Top and bottom edges have intentionally different curvatures
+ *     so it looks hand-painted, not geometrically symmetric
+ */
+
+// Each stroke is a self-contained SVG with its own viewBox and path.
+// Positioning and rotation are applied via Tailwind classes on the wrapper.
+
+const strokes = [
+  // ── 1. Sage green · long diagonal · top-right ──────────────────────────
+  {
+    viewBox: "0 0 500 70",
+    fill: "hsl(95, 14%, 63%)",
+    d: "M 3,35 C 18,20 62,12 138,17 C 212,21 282,13 362,19 C 428,23 468,29 497,35 C 469,46 429,54 364,51 C 284,58 213,60 138,55 C 63,52 19,48 3,35 Z",
+    className: "absolute -top-3 -right-10 w-[290px] opacity-[0.11] dark:opacity-[0.07] rotate-[-8deg]",
+  },
+
+  // ── 2. Lavender · medium arc · bottom-left ────────────────────────────
+  {
+    viewBox: "0 0 420 65",
+    fill: "hsl(277, 26%, 74%)",
+    d: "M 3,32 C 22,16 68,9 145,15 C 222,20 295,11 368,18 C 400,22 415,27 417,32 C 416,42 400,50 370,47 C 296,54 223,56 146,50 C 70,46 23,42 3,32 Z",
+    className: "absolute bottom-4 -left-6 w-[250px] opacity-[0.10] dark:opacity-[0.07] rotate-[6deg]",
+  },
+
+  // ── 3. Fog blue · short accent · right center ────────────────────────
+  {
+    viewBox: "0 0 300 55",
+    fill: "hsl(200, 22%, 68%)",
+    d: "M 3,27 C 18,12 55,6 115,12 C 175,17 220,10 270,15 C 288,18 297,22 297,27 C 297,34 289,40 271,43 C 221,48 175,50 115,46 C 56,44 19,38 3,27 Z",
+    className: "absolute top-[42%] -right-4 w-[185px] opacity-[0.09] dark:opacity-[0.06] rotate-[-14deg]",
+  },
+
+  // ── 4. Sage · thin wispy stroke · top-left ───────────────────────────
+  {
+    viewBox: "0 0 360 40",
+    fill: "hsl(95, 11%, 61%)",
+    d: "M 2,20 C 18,11 58,7 125,11 C 192,14 258,8 318,12 C 340,14 353,17 358,20 C 354,24 341,28 319,27 C 259,30 192,32 125,28 C 59,26 19,24 2,20 Z",
+    className: "absolute top-14 -left-2 w-[210px] opacity-[0.09] dark:opacity-[0.06] rotate-[11deg]",
+  },
+
+  // ── 5. Lavender · medium sweep · lower-right ────────────────────────
+  {
+    viewBox: "0 0 450 70",
+    fill: "hsl(277, 25%, 76%)",
+    d: "M 3,35 C 24,17 75,9 158,16 C 241,22 318,12 395,19 C 428,23 446,29 447,35 C 447,45 428,54 396,51 C 320,58 243,60 159,54 C 76,50 25,48 3,35 Z",
+    className: "absolute bottom-28 right-2 w-[255px] opacity-[0.10] dark:opacity-[0.06] rotate-[-4deg]",
+  },
+] as const;
+
+function WatercolorStrokes() {
   return (
     <div className="pointer-events-none select-none" aria-hidden>
-
-      {/* — Sage green — large, top right */}
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
-        className="absolute -top-20 -right-24 w-80 h-80 opacity-[0.10] dark:opacity-[0.07]">
-        <path fill="hsl(95, 11%, 68%)"
-          d="M43.9,-57.2C56.7,-46.8,66.6,-33,71.1,-17.4C75.5,-1.7,74.3,15.8,66.8,30C59.2,44.2,45.2,55.1,29.8,62.5C14.4,69.9,-2.4,73.8,-17.8,69.6C-33.1,65.4,-47,53.2,-58.4,38.3C-69.8,23.4,-78.7,5.8,-77.7,-11.9C-76.7,-29.5,-65.8,-47.2,-51.2,-57.5C-36.6,-67.8,-18.3,-70.7,-0.8,-69.7C16.7,-68.6,31.1,-67.6,43.9,-57.2Z"
-          transform="translate(200 200) scale(1.6)" />
-      </svg>
-
-      {/* — Lavender — large, bottom left */}
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
-        className="absolute -bottom-28 -left-20 w-96 h-96 opacity-[0.09] dark:opacity-[0.06]">
-        <path fill="hsl(277, 28%, 79%)"
-          d="M40.5,-51.2C52.8,-40.3,63,-27.1,65.2,-12.8C67.4,1.5,61.7,17,52.3,28.8C43,40.6,30.1,48.7,15.3,54.6C0.5,60.5,-16.2,64.2,-30,59.4C-43.8,54.6,-54.6,41.3,-61.1,25.5C-67.6,9.7,-69.7,-8.6,-64.2,-24C-58.7,-39.4,-45.5,-51.9,-31.1,-62C-16.7,-72.1,-1.2,-79.8,12.8,-78.1C26.8,-76.4,28.2,-62.1,40.5,-51.2Z"
-          transform="translate(200 200) scale(1.7)" />
-      </svg>
-
-      {/* — Fog blue — medium, right center */}
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
-        className="absolute top-1/3 -right-16 w-60 h-60 opacity-[0.08] dark:opacity-[0.05]">
-        <path fill="hsl(200, 22%, 71%)"
-          d="M38.2,-48.7C50.5,-38.3,62.1,-27.4,66.5,-13.3C70.9,0.8,67.2,18.1,58.3,31.3C49.4,44.5,35.3,53.5,19.8,60.2C4.2,66.8,-12.8,71.1,-27.4,66.4C-42,61.7,-54.2,48,-62.7,31.7C-71.3,15.4,-76.3,-3.5,-72.3,-20.2C-68.3,-36.8,-55.3,-51.2,-40.6,-61.1C-25.8,-71,-9.3,-76.4,4.8,-81.9C18.9,-87.4,25.9,-59.1,38.2,-48.7Z"
-          transform="translate(200 200) scale(1.4)" />
-      </svg>
-
-      {/* — Sage — small, top left (subtle second accent) */}
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
-        className="absolute -top-8 -left-16 w-48 h-48 opacity-[0.07] dark:opacity-[0.05]">
-        <path fill="hsl(95, 11%, 68%)"
-          d="M36,-46.9C47.5,-37.4,58.3,-27.2,63.3,-13.8C68.2,-0.4,67.3,16.2,60.3,29.6C53.2,43,40.1,53.2,25.4,60.6C10.8,68,-5.4,72.6,-20.2,69.3C-35,65.9,-48.5,54.7,-58.7,40.3C-68.8,25.9,-75.6,8.4,-74.5,-8.7C-73.4,-25.7,-64.4,-42.2,-51.3,-51.7C-38.3,-61.2,-21.1,-63.7,-5.2,-57.7C10.7,-51.7,24.5,-56.4,36,-46.9Z"
-          transform="translate(200 200) scale(1.2)" />
-      </svg>
-
-      {/* — Lavender — small, bottom right */}
-      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
-        className="absolute bottom-16 -right-12 w-44 h-44 opacity-[0.08] dark:opacity-[0.05]">
-        <path fill="hsl(277, 28%, 79%)"
-          d="M41.3,-52.5C54.4,-42.6,66.6,-31,71.8,-16.3C77.1,-1.5,75.4,16.4,67.6,31.1C59.8,45.8,45.8,57.3,30.1,64.7C14.4,72,-3,75.2,-18.8,70.2C-34.6,65.2,-48.8,52,-59.4,36.2C-70,20.3,-77,1.9,-74.4,-15C-71.7,-31.9,-59.3,-47.4,-44.6,-57.1C-29.9,-66.9,-12.9,-71.8,0.9,-71.8C14.7,-72.8,28.2,-62.4,41.3,-52.5Z"
-          transform="translate(200 200) scale(1.1)" />
-      </svg>
-
+      {strokes.map((s, i) => (
+        <svg
+          key={i}
+          viewBox={s.viewBox}
+          xmlns="http://www.w3.org/2000/svg"
+          className={s.className}
+          style={{ overflow: "visible" }}
+        >
+          <path fill={s.fill} d={s.d} />
+        </svg>
+      ))}
     </div>
   );
 }
@@ -60,7 +82,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
       transition={{ duration: 0.9, ease: "easeInOut" }}
       className="w-full max-w-lg mx-auto min-h-[100dvh] px-6 pt-12 pb-28 flex flex-col relative overflow-hidden"
     >
-      <WatercolorAccents />
+      <WatercolorStrokes />
       {children}
     </motion.div>
   );
