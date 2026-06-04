@@ -180,3 +180,8 @@ Clonar el repositorio:
 
 ```bash
 git clone https://github.com/tuusuario/mientras-tanto.git
+
+
+## 🚀 Herramientas
+
+He usado Suno AI para las melodias en MP3..y el uso de Replit.
