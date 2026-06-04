@@ -61,15 +61,11 @@ export default function Diario() {
     ].join("\n");
 
     const body = entries
-      .map(e =>
-        `[ ${formatDate(e.date)} ]\n\n${e.content}\n\n${"─".repeat(38)}\n`
-      )
+      .map(e => `[ ${formatDate(e.date)} ]\n\n${e.content}\n\n${"─".repeat(38)}\n`)
       .join("\n");
 
     const footer = `\nDescargado el ${new Date().toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      day: "numeric", month: "long", year: "numeric",
     })}`;
 
     const text = header + "\n" + body + footer;
@@ -94,11 +90,35 @@ export default function Diario() {
   return (
     <PageTransition>
       <div className="flex flex-col w-full max-w-md mx-auto">
-        <header className="mb-8 mt-4 text-center">
+        {/* Header with download always visible */}
+        <header className="mb-8 mt-4 text-center relative">
           <h2 className="text-3xl font-serif text-foreground mb-2">Tu Diario</h2>
           <p className="text-xs text-foreground-soft tracking-wider">
             Este espacio es solo tuyo. Nada sale de aquí.
           </p>
+
+          {/* Download button — always in the header */}
+          <button
+            onClick={downloadDiary}
+            disabled={entries.length === 0}
+            title={entries.length === 0 ? "Escribe algo primero" : "Descargar como archivo de texto"}
+            className={`
+              absolute right-0 top-1/2 -translate-y-1/2
+              flex items-center gap-1.5 px-3.5 py-2 rounded-full border text-xs tracking-wide
+              transition-all duration-700 font-sans
+              ${downloaded
+                ? "border-sage/50 text-sage bg-sage/10"
+                : entries.length === 0
+                  ? "border-background-secondary/50 text-foreground-soft/30 cursor-default"
+                  : "border-background-secondary text-foreground-soft hover:text-foreground hover:border-foreground-soft/30 cursor-pointer"
+              }
+            `}
+          >
+            <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
+            <span className="hidden sm:inline">
+              {downloaded ? "Descargado ✓" : "Descargar"}
+            </span>
+          </button>
         </header>
 
         {/* Write area */}
@@ -112,7 +132,7 @@ export default function Diario() {
           />
           <div className="flex justify-between items-center mt-4">
             <span className="text-[10px] text-foreground-soft/40 font-sans">
-              {newEntry.length > 0 ? `${newEntry.length} caracteres · ⌘↵ para guardar` : ""}
+              {newEntry.length > 0 ? `${newEntry.length} caracteres · ⌘↵ guardar` : ""}
             </span>
             <button
               onClick={saveEntry}
@@ -124,7 +144,7 @@ export default function Diario() {
           </div>
         </div>
 
-        {/* Entries list */}
+        {/* Entries */}
         <div className="space-y-6">
           <AnimatePresence>
             {entries.map(entry => (
@@ -152,29 +172,10 @@ export default function Diario() {
             ))}
           </AnimatePresence>
 
-          {entries.length === 0 ? (
+          {entries.length === 0 && (
             <div className="text-center text-foreground-soft/50 text-sm mt-12 italic font-serif">
               Aún no has escrito nada. El papel está en blanco esperando por ti.
             </div>
-          ) : (
-            /* Download button — only visible when there are entries */
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex justify-center pt-4 pb-2"
-            >
-              <button
-                onClick={downloadDiary}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide transition-all duration-700 font-sans ${
-                  downloaded
-                    ? "border-sage/40 text-sage bg-sage/10"
-                    : "border-background-secondary text-foreground-soft/60 hover:text-foreground-soft hover:border-foreground-soft/30"
-                }`}
-              >
-                <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
-                {downloaded ? "Descargado ✓" : "Descargar mi diario"}
-              </button>
-            </motion.div>
           )}
         </div>
       </div>
