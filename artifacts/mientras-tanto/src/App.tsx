@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { MusicProvider } from "@/contexts/MusicContext";
 
 import Inicio from "@/pages/inicio";
 import ComoMeSiento from "@/pages/como-me-siento";
@@ -15,7 +16,6 @@ import ModoRespiracion from "@/pages/modo-respiracion";
 
 const queryClient = new QueryClient();
 
-// Pages that show the bottom nav
 const NAV_ROUTES = ["/", "/como-me-siento", "/diario", "/pausa", "/hoy-basta"];
 
 function Router() {
@@ -39,7 +39,6 @@ function Router() {
           </Route>
         </Switch>
       </AnimatePresence>
-
       {showNav && <BottomNav />}
     </>
   );
@@ -49,15 +48,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            {/* Full-width layout — content width is managed per-page via PageTransition */}
-            <div className="min-h-[100dvh] w-full bg-background transition-colors duration-700">
-              <Router />
-            </div>
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
+        <MusicProvider>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <div className="min-h-[100dvh] w-full bg-background transition-colors duration-700">
+                <Router />
+              </div>
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </MusicProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

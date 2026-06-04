@@ -10,7 +10,7 @@
   --color-background-secondary: hsl(var(--background-secondary));
   --color-foreground: hsl(var(--foreground));
   --color-foreground-soft: hsl(var(--foreground-soft));
-  
+
   --color-lavender: hsl(var(--lavender));
   --color-fog: hsl(var(--fog));
   --color-sage: hsl(var(--sage));
@@ -24,26 +24,29 @@
   --radius-xl: 24px;
 }
 
+/* Light mode — derived from the logo palette:
+   cream background, sage leaves, lavender cloud, misty-blue mountains */
 :root {
-  --background: 35 32% 94%;
-  --background-secondary: 36 29% 88%;
-  --foreground: 30 5% 29%;
-  --foreground-soft: 30 5% 45%;
-  
-  --lavender: 258 19% 80%;
-  --fog: 198 21% 80%;
-  --sage: 94 14% 78%;
+  --background: 36 38% 92%;          /* #F2EDE3 — warm cream */
+  --background-secondary: 33 28% 86%; /* #E5DBCF — soft sand */
+  --foreground: 27 9% 31%;            /* #5A5046 — warm brown (logo text) */
+  --foreground-soft: 28 7% 47%;       /* #7A726A — muted warm */
+
+  --lavender: 277 28% 79%;            /* #CAB8DC — logo purple cloud */
+  --fog: 200 22% 71%;                 /* #A5BECA — logo misty mountains */
+  --sage: 95 11% 68%;                 /* #B0BCA0 — logo sage leaves */
 }
 
+/* Warm dark mode — same family, darker */
 .dark {
-  --background: 30 15% 10%;
-  --background-secondary: 24 14% 15%;
-  --foreground: 35 27% 87%;
-  --foreground-soft: 27 7% 57%;
-  
-  --lavender: 258 19% 40%;
-  --fog: 198 21% 40%;
-  --sage: 94 14% 40%;
+  --background: 30 15% 11%;           /* #1F1A15 — deep warm brown */
+  --background-secondary: 27 14% 16%; /* #2A231C */
+  --foreground: 35 27% 87%;           /* #E8DFD3 */
+  --foreground-soft: 27 8% 58%;       /* #9C9186 */
+
+  --lavender: 277 22% 45%;            /* muted lavender for dark */
+  --fog: 200 18% 42%;                 /* muted blue for dark */
+  --sage: 95 10% 42%;                 /* muted sage for dark */
 }
 
 @layer base {
@@ -51,7 +54,8 @@
     @apply font-sans antialiased bg-background text-foreground tracking-wide;
     position: relative;
   }
-  
+
+  /* Subtle paper grain overlay */
   body::before {
     content: "";
     position: fixed;
@@ -61,7 +65,7 @@
     height: 100vh;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.22;
+    opacity: 0.18;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 

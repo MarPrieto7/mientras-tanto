@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
-import { emotionProfiles, startAmbient, AmbientHandle } from "@/lib/ambient";
-import logoUrl from "@/assets/logo.svg";
+import { useMusic } from "@/contexts/MusicContext";
+import logoUrl from "@assets/Logo_Mientras_tanto_1780576362543.png";
 
 const phrases = [
   "No tienes que hacer nada rápido aquí.",
@@ -15,15 +15,14 @@ const phrases = [
   "Toma una respiración profunda.",
   "Está bien no saber qué hacer.",
   "Hoy ya hiciste suficiente.",
-  "El silencio también es una forma de cuidarse."
+  "El silencio también es una forma de cuidarse.",
+  "Tu ritmo es válido."
 ];
 
 export default function Inicio() {
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const handleRef = useRef<AmbientHandle | null>(null);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, isAutoMode } = useTheme();
+  const { isGlobalPlaying, toggleGlobal } = useMusic();
 
   // Rotate phrases slowly
   useEffect(() => {
@@ -33,46 +32,16 @@ export default function Inicio() {
     return () => clearInterval(interval);
   }, []);
 
-  const stopAudio = () => {
-    handleRef.current?.stop();
-    handleRef.current = null;
-    // Close and discard the context immediately so browser releases audio
-    audioCtxRef.current = null;
-    setIsPlaying(false);
-  };
-
-  const startAudio = () => {
-    // Always create a fresh AudioContext
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    audioCtxRef.current = ctx;
-    handleRef.current = startAmbient(ctx, emotionProfiles["neutral"]);
-    setIsPlaying(true);
-  };
-
-  const toggleAudio = () => {
-    if (isPlaying) {
-      stopAudio();
-    } else {
-      startAudio();
-    }
-  };
-
-  // Stop audio when page is unmounted (e.g., navigating away)
-  useEffect(() => {
-    return () => {
-      handleRef.current?.stop();
-    };
-  }, []);
-
   return (
     <PageTransition>
       {/* Top controls */}
-      <div className="absolute top-5 right-5 flex gap-3 z-10">
+      <div className="absolute top-5 right-5 flex gap-2 z-10">
         <button
           data-testid="button-toggle-theme"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
-          aria-label="Cambiar tema"
+          aria-label={isAutoMode ? "Modo automático activo — cambiar tema" : "Cambiar tema"}
+          title={isAutoMode ? "Tema automático según la hora" : `Tema ${theme}`}
         >
           {theme === "dark"
             ? <Sun className="w-4 h-4" strokeWidth={1.5} />
@@ -80,11 +49,12 @@ export default function Inicio() {
         </button>
         <button
           data-testid="button-toggle-sound"
-          onClick={toggleAudio}
+          onClick={toggleGlobal}
           className="p-2 text-foreground-soft hover:text-foreground transition-colors duration-500"
-          aria-label={isPlaying ? "Silenciar" : "Activar sonido ambiente"}
+          aria-label={isGlobalPlaying ? "Silenciar música" : "Activar música ambiente"}
+          title={isGlobalPlaying ? "Silenciar música" : "Activar música ambiente"}
         >
-          {isPlaying
+          {isGlobalPlaying
             ? <Volume2 className="w-4 h-4" strokeWidth={1.5} />
             : <VolumeX className="w-4 h-4" strokeWidth={1.5} />}
         </button>
@@ -95,18 +65,18 @@ export default function Inicio() {
         {/* Logo */}
         <motion.img
           src={logoUrl}
-          alt="Mientras tanto"
-          className="w-16 h-16 opacity-80"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 0.8, scale: 1 }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          alt="Mientras tanto — tu refugio emocional"
+          className="w-36 h-36 object-contain"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 2.5, ease: "easeOut" }}
         />
 
         {/* Rotating phrase */}
         <AnimatePresence mode="wait">
           <motion.h1
             key={phraseIndex}
-            className="text-3xl md:text-4xl font-serif text-center leading-relaxed text-foreground tracking-wide px-4 max-w-xs"
+            className="text-3xl md:text-4xl font-serif text-center leading-relaxed text-foreground tracking-wide px-6 max-w-sm"
             initial={{ opacity: 0, filter: "blur(6px)" }}
             animate={{ opacity: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, filter: "blur(6px)" }}
@@ -116,15 +86,17 @@ export default function Inicio() {
           </motion.h1>
         </AnimatePresence>
 
-        {/* App name — very subtle, below phrase */}
-        <motion.p
-          className="text-xs text-foreground-soft tracking-widest uppercase font-sans"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.4 }}
-          transition={{ delay: 1.5, duration: 2 }}
-        >
-          mientras tanto
-        </motion.p>
+        {/* Auto dark mode hint */}
+        {isAutoMode && (
+          <motion.p
+            className="text-[10px] text-foreground-soft/40 tracking-widest uppercase font-sans"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 3, duration: 2 }}
+          >
+            tema automático · {new Date().getHours() >= 20 || new Date().getHours() < 7 ? "modo noche" : "modo día"}
+          </motion.p>
+        )}
       </div>
     </PageTransition>
   );
